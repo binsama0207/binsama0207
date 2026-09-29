@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>화성고 3학년 8반 학급 홈페이지</title>
+    <!-- Firebase SDK (실시간 데이터베이스 연동용 라이브러리) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         :root {
             --primary-color: #6c5ce7;
@@ -213,7 +216,6 @@
     <header>
         <div class="container">
             <h1>🔥 화성고 3학년 8반 🔥</h1>
-            <!-- 오늘 날짜와 수능 D-Day가 한 카드에 함께 출력됩니다 -->
             <div class="header-info-card" id="headerInfoDisplay">날짜 계산 중...</div>
         </div>
     </header>
@@ -226,19 +228,18 @@
                 📌 담임교사 알림장
                 <button class="btn" onclick="toggleNoticeEdit()" id="noticeEditBtn">알림장 수정</button>
             </h2>
-            <div class="notice-card" id="noticeContent">
-                1. 수능 전 모의고사 대비 오답노트 작성 제출하기
-                2. 이번 주 금요일 청소 구역 재배치 안내
-                3. 날씨가 쌀쌀하니 가디건 등 외투 챙기기!
-            </div>
+            <div class="notice-card" id="noticeContent">불러오는 중...</div>
         </section>
 
         <!-- [2] 급식 메뉴 바로가기 버튼 -->
+        <section>
+            <h2>🍱 오늘의 급식 메뉴</h2>
             <div class="meal-link-card">
                 <a href="https://hwasung-h.goehs.kr/hwasung-h/ad/fm/foodmenu/selectFoodMenuView.do?mi=4207" target="_blank" class="btn btn-meal">
                     🍱 오늘/이번 주 급식 메뉴 보러가기 ➔
                 </a>
             </div>
+        </section>
 
         <!-- [3] 학습 및 수행평가 일정 -->
         <section>
@@ -261,13 +262,7 @@
                         </tr>
                     </thead>
                     <tbody id="scheduleBody">
-                        <tr>
-                            <td>10/12 (월)</td>
-                            <td>수학 II</td>
-                            <td>미분 단원 형성평가</td>
-                            <td>계산기 불허</td>
-                            <td class="action-col" style="display:none;"><button class="btn btn-danger" onclick="deleteRow(this)">삭제</button></td>
-                        </tr>
+                        <!-- 파이어베이스 데이터가 이곳에 삽입됩니다 -->
                     </tbody>
                 </table>
             </div>
@@ -291,20 +286,36 @@
     </div>
 
     <script>
-        // 1. 오늘 날짜 및 수능 D-Day 계산 함수
+        // ==========================================
+        // 0. 파이어베이스(Firebase) 설정 및 초기화
+        // ==========================================
+        // ⚠️ 아래 databaseURL을 선생님의 Firebase Realtime Database URL로 변경해 주세요!
+        const firebaseConfig = {
+            databaseURL: "https://myclassroomhomepage-86f71-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 관리자 비밀번호 설정 (원하는 비밀번호로 변경하세요)
+        const ADMIN_PASSWORD = "3088"; 
+
+        function checkPassword() {
+            const input = prompt("선생님 전용 비밀번호를 입력하세요:");
+            return input === ADMIN_PASSWORD;
+        }
+
+        // ==========================================
+        // 1. 오늘 날짜 및 수능 D-Day 계산
+        // ==========================================
         function updateHeaderInfo() {
             const today = new Date();
             const year = today.getFullYear();
             const month = today.getMonth() + 1;
             const date = today.getDate();
-            
             const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
             const dayName = daysOfWeek[today.getDay()];
 
-            // 수능 날짜 (2026년 11월 19일 기준)
             const satDate = new Date("2026-11-19T00:00:00");
-            
-            // 시/분/초를 동일하게 맞춘 후 날짜 차이 계산
             const todayReset = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const satReset = new Date(satDate.getFullYear(), satDate.getMonth(), satDate.getDate());
 
@@ -316,91 +327,120 @@
             else if (diffDays === 0) dDayText = `🔥 2027 수능 D-DAY!`;
             else dDayText = `🎓 수능 D+${Math.abs(diffDays)}`;
 
-            // 날짜와 D-Day 합쳐서 출력
-            const display = document.getElementById("headerInfoDisplay");
-            display.innerText = `📅 ${year}년 ${month}월 ${date}일 (${dayName}) | ${dDayText}`;
+            document.getElementById("headerInfoDisplay").innerText = `📅 ${year}년 ${month}월 ${date}일 (${dayName}) | ${dDayText}`;
         }
 
-        // 2. 담임교사 알림장 수정 및 저장 기능
+        // ==========================================
+        // 2. 알림장 기능 (파이어베이스 실시간 연동)
+        // ==========================================
         let isNoticeEditing = false;
         function toggleNoticeEdit() {
             const noticeContent = document.getElementById("noticeContent");
             const noticeEditBtn = document.getElementById("noticeEditBtn");
-            isNoticeEditing = !isNoticeEditing;
 
-            if (isNoticeEditing) {
+            if (!isNoticeEditing) {
+                if (!checkPassword()) return alert("비밀번호가 일치하지 않습니다.");
+                isNoticeEditing = true;
                 noticeContent.contentEditable = "true";
                 noticeContent.focus();
                 noticeEditBtn.innerText = "저장하기";
                 noticeEditBtn.style.backgroundColor = "#00b894";
             } else {
+                isNoticeEditing = false;
                 noticeContent.contentEditable = "false";
                 noticeEditBtn.innerText = "알림장 수정";
                 noticeEditBtn.style.backgroundColor = "var(--primary-color)";
-                localStorage.setItem("hwasung_3_8_notice", noticeContent.innerText);
+                
+                // 파이어베이스 DB에 저장 (모든 학생 화면에 즉시 반영)
+                db.ref("notice").set(noticeContent.innerText);
             }
         }
 
-        function loadNotice() {
-            const savedNotice = localStorage.getItem("hwasung_3_8_notice");
-            if (savedNotice) {
-                document.getElementById("noticeContent").innerText = savedNotice;
+        // 실시간 데이터 수신 (학생 및 접속자 전원 실시간 반영)
+        db.ref("notice").on("value", (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("noticeContent").innerText = data;
+            } else {
+                document.getElementById("noticeContent").innerText = "1. 수능 전 모의고사 대비 오답노트 작성 제출하기\n2. 이번 주 금요일 청소 구역 재배치 안내\n3. 날씨가 쌀쌀하니 가디건 등 외투 챙기기!";
             }
-        }
+        });
 
-        // 3. 수행평가 일정 토글 및 저장
+        // ==========================================
+        // 3. 수행평가 일정 (파이어베이스 연동)
+        // ==========================================
         let isEditing = false;
         function toggleEditMode() {
-            isEditing = !isEditing;
             const editBtn = document.getElementById("editBtn");
             const actionCols = document.querySelectorAll(".action-col");
             const cells = document.querySelectorAll("#scheduleBody td:not(.action-col)");
 
-            if (isEditing) {
+            if (!isEditing) {
+                if (!checkPassword()) return alert("비밀번호가 일치하지 않습니다.");
+                isEditing = true;
                 editBtn.innerText = "저장하기";
                 editBtn.style.backgroundColor = "#00b894";
                 actionCols.forEach(col => col.style.display = "table-cell");
                 cells.forEach(cell => cell.contentEditable = "true");
             } else {
+                isEditing = false;
                 editBtn.innerText = "수정하기";
                 editBtn.style.backgroundColor = "var(--primary-color)";
                 actionCols.forEach(col => col.style.display = "none");
                 cells.forEach(cell => cell.contentEditable = "false");
-                localStorage.setItem("hwasung_3_8_schedule", document.getElementById("scheduleBody").innerHTML);
+
+                // 파이어베이스 DB에 저장
+                db.ref("schedule").set(document.getElementById("scheduleBody").innerHTML);
             }
         }
 
         function addRow() {
+            if (!isEditing) {
+                alert("'수정하기' 버튼을 먼저 누르고 비밀번호를 입력해주세요.");
+                return;
+            }
             const tbody = document.getElementById("scheduleBody");
             const newRow = document.createElement("tr");
-            const isEditable = isEditing ? 'contenteditable="true"' : 'contenteditable="false"';
-            const actionDisplay = isEditing ? 'table-cell' : 'none';
 
             newRow.innerHTML = `
-                <td ${isEditable}>날짜 입력</td>
-                <td ${isEditable}>과목명</td>
-                <td ${isEditable}>내용 입력</td>
-                <td ${isEditable}>비고</td>
-                <td class="action-col" style="display:${actionDisplay};"><button class="btn btn-danger" onclick="deleteRow(this)">삭제</button></td>
+                <td contenteditable="true">날짜 입력</td>
+                <td contenteditable="true">과목명</td>
+                <td contenteditable="true">내용 입력</td>
+                <td contenteditable="true">비고</td>
+                <td class="action-col" style="display:table-cell;"><button class="btn btn-danger" onclick="deleteRow(this)">삭제</button></td>
             `;
             tbody.appendChild(newRow);
         }
 
         function deleteRow(btn) {
             btn.closest("tr").remove();
-            localStorage.setItem("hwasung_3_8_schedule", document.getElementById("scheduleBody").innerHTML);
+            if (isEditing) {
+                db.ref("schedule").set(document.getElementById("scheduleBody").innerHTML);
+            }
         }
 
-        function loadSchedule() {
-            const savedData = localStorage.getItem("hwasung_3_8_schedule");
-            if (savedData) document.getElementById("scheduleBody").innerHTML = savedData;
-        }
+        // 실시간 일정 수신
+        db.ref("schedule").on("value", (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("scheduleBody").innerHTML = data;
+            } else {
+                document.getElementById("scheduleBody").innerHTML = `
+                    <tr>
+                        <td>10/12 (월)</td>
+                        <td>수학 II</td>
+                        <td>미분 단원 형성평가</td>
+                        <td>계산기 불허</td>
+                        <td class="action-col" style="display:none;"><button class="btn btn-danger" onclick="deleteRow(this)">삭제</button></td>
+                    </tr>
+                `;
+            }
+        });
 
-        // 4. 서식 다운로드 관리
-        let forms = JSON.parse(localStorage.getItem("hwasung_3_8_forms")) || [
-            { title: "📄 교외체험학습 신청서 및 보고서", url: "#" },
-            { title: "📄 결석계 및 진료확인서 제출 양식", url: "#" }
-        ];
+        // ==========================================
+        // 4. 서식 다운로드 관리 (파이어베이스 연동)
+        // ==========================================
+        let forms = [];
 
         function renderForms() {
             const formList = document.getElementById("formList");
@@ -419,27 +459,41 @@
         function addFormItem() {
             const titleInput = document.getElementById("formTitleInput");
             const urlInput = document.getElementById("formUrlInput");
+            
             if (!titleInput.value.trim()) return alert("양식 이름을 입력하세요.");
+            if (!checkPassword()) return alert("비밀번호가 일치하지 않습니다.");
 
             forms.push({ title: titleInput.value.trim(), url: urlInput.value.trim() || "#" });
             titleInput.value = "";
             urlInput.value = "";
-            localStorage.setItem("hwasung_3_8_forms", JSON.stringify(forms));
-            renderForms();
+
+            // 파이어베이스 DB 업데이트
+            db.ref("forms").set(forms);
         }
 
         function deleteFormItem(index) {
+            if (!checkPassword()) return alert("비밀번호가 일치하지 않습니다.");
             forms.splice(index, 1);
-            localStorage.setItem("hwasung_3_8_forms", JSON.stringify(forms));
-            renderForms();
+            db.ref("forms").set(forms);
         }
 
-        // 페이지 로드 시 초기화 실행
+        // 실시간 서식 목록 수신
+        db.ref("forms").on("value", (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                forms = data;
+            } else {
+                forms = [
+                    { title: "📄 교외체험학습 신청서 및 보고서", url: "#" },
+                    { title: "📄 결석계 및 진료확인서 제출 양식", url: "#" }
+                ];
+            }
+            renderForms();
+        });
+
+        // 페이지 초기화
         window.onload = function() {
             updateHeaderInfo();
-            loadNotice();
-            loadSchedule();
-            renderForms();
         };
     </script>
 </body>
