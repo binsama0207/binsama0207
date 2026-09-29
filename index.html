@@ -9,7 +9,7 @@
             --primary-color: #6c5ce7;
             --secondary-color: #a29bfe;
             --accent-color: #ff7675;
-            --notice-bg: #fff9db;
+            --notice-bg: #fffdf5;
             --bg-color: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #2d3436;
@@ -82,36 +82,38 @@
             padding-bottom: 10px;
         }
 
-        /* 공통 버튼 */
+        /* 버튼 스타일 */
         .btn {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 10px 16px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
             transition: 0.2s;
         }
 
         .btn:hover {
             opacity: 0.9;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         .btn-danger {
             background-color: var(--accent-color);
         }
 
-        /* 1. 담임교사 알림장 스타일 (최상단) */
+        /* 1. 담임교사 알림장 스타일 */
         .notice-section {
             border: 2px solid #ffe066;
-            background-color: #fffdf5;
+            background-color: var(--notice-bg);
         }
 
         .notice-card {
-            background: var(--notice-bg);
+            background: #fff9db;
             padding: 20px;
             border-radius: 12px;
             border-left: 6px solid #fcc419;
@@ -124,45 +126,24 @@
             background: #ffffff;
         }
 
-        /* 2. 급식 카드 스타일 */
-        .meal-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .meal-card {
-            background-color: #f1f2f6;
-            border-radius: 12px;
-            padding: 15px;
-        }
-
-        .meal-card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+        /* 2. 급식 버튼 영역 */
+        .meal-link-card {
             text-align: center;
-            color: #2d3436;
+            padding: 30px 20px;
+            background: #f1f2f6;
+            border-radius: 15px;
         }
 
-        .meal-time {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            min-height: 70px;
+        .meal-link-card p {
+            font-size: 1rem;
+            color: #636e72;
+            margin-bottom: 15px;
         }
 
-        .meal-time strong {
-            display: block;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-            margin-bottom: 3px;
-        }
-
-        .meal-time p {
-            font-size: 0.9rem;
-            color: #4a4a4a;
-            word-break: keep-all;
+        .btn-meal {
+            background-color: #00b894;
+            font-size: 1.1rem;
+            padding: 12px 24px;
         }
 
         /* 3. 수행평가 표 스타일 */
@@ -188,7 +169,7 @@
             outline: none;
         }
 
-        /* 4. 서식 양식 다운로드 */
+        /* 4. 서식 다운로드 */
         .form-list {
             list-style: none;
         }
@@ -243,7 +224,7 @@
 
     <div class="container">
 
-        <!-- [1] 담임교사 알림장 (급식보다 상단 배치) -->
+        <!-- [1] 담임교사 알림장 (최상단) -->
         <section class="notice-section">
             <h2>
                 📌 담임교사 알림장
@@ -256,50 +237,18 @@
             </div>
         </section>
 
-        <!-- [2] 오늘 & 내일 실시간 급식 안내 -->
+        <!-- [2] 급식 메뉴 바로가기 버튼 -->
         <section>
-            <h2>
-                🍱 실시간 급식 메뉴
-                <span style="font-size: 0.75rem; color: #888; font-weight: normal;">(화성고 홈페이지 연동)</span>
-            </h2>
-            <div class="meal-grid">
-                <!-- 오늘 식단 -->
-                <div class="meal-card">
-                    <h3 id="todayTitle">오늘의 급식</h3>
-                    <div class="meal-time">
-                        <strong>아침 (조식)</strong>
-                        <p id="todayBreakfast">불러오는 중...</p>
-                    </div>
-                    <div class="meal-time">
-                        <strong>점심 (중식)</strong>
-                        <p id="todayLunch">불러오는 중...</p>
-                    </div>
-                    <div class="meal-time">
-                        <strong>저녁 (석식)</strong>
-                        <p id="todayDinner">불러오는 중...</p>
-                    </div>
-                </div>
-
-                <!-- 내일 식단 -->
-                <div class="meal-card">
-                    <h3 id="tomorrowTitle">내일의 급식</h3>
-                    <div class="meal-time">
-                        <strong>아침 (조식)</strong>
-                        <p id="tomorrowBreakfast">불러오는 중...</p>
-                    </div>
-                    <div class="meal-time">
-                        <strong>점심 (중식)</strong>
-                        <p id="tomorrowLunch">불러오는 중...</p>
-                    </div>
-                    <div class="meal-time">
-                        <strong>저녁 (석식)</strong>
-                        <p id="tomorrowDinner">불러오는 중...</p>
-                    </div>
-                </div>
+            <h2>🍱 오늘의 급식 메뉴</h2>
+            <div class="meal-link-card">
+                <p>화성고등학교 공식 급식 식단표 페이지로 바로 이동합니다.</p>
+                <a href="https://hwasung-h.goehs.kr/hwasung-h/ad/fm/foodmenu/selectFoodMenuView.do?mi=4207" target="_blank" class="btn btn-meal">
+                    🍱 오늘/이번 주 급식 메뉴 보러가기 ➔
+                </a>
             </div>
         </section>
 
-        <!-- [3] 학습 및 수행평가 일정 (수정 가능) -->
+        <!-- [3] 학습 및 수행평가 일정 -->
         <section>
             <h2>
                 ✏️ 이번 주 수행평가 & 시험 일정
@@ -368,7 +317,6 @@
 
         // 2. 담임교사 알림장 수정 기능
         let isNoticeEditing = false;
-
         function toggleNoticeEdit() {
             const noticeContent = document.getElementById("noticeContent");
             const noticeEditBtn = document.getElementById("noticeEditBtn");
@@ -394,97 +342,7 @@
             }
         }
 
-        // 3. 화성고등학교 급식 메뉴 실시간 파싱 (AllOrigins CORS 프록시 활용)
-        async function fetchSchoolMeals() {
-            const schoolUrl = "https://hwasung-h.goehs.kr/hwasung-h/ad/fm/foodmenu/selectFoodMenuView.do?mi=4207";
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(schoolUrl)}`;
-
-            try {
-                const response = await fetch(proxyUrl);
-                const data = await response.json();
-                
-                if (!data.contents) throw new Error("데이터 수신 실패");
-
-                // HTML 파싱
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(data.contents, "text/html");
-
-                // 날짜 기준 텍스트 추출 (오늘, 내일)
-                const now = new Date();
-                const todayStr = `${now.getMonth() + 1}.${now.getDate()}`;
-                
-                const tomorrow = new Date(now);
-                tomorrow.setDate(now.getDate() + 1);
-                const tomorrowStr = `${tomorrow.getMonth() + 1}.${tomorrow.getDate()}`;
-
-                document.getElementById("todayTitle").innerText = `오늘의 급식 (${todayStr})`;
-                document.getElementById("tomorrowTitle").innerText = `내일의 급식 (${tomorrowStr})`;
-
-                // 식단 정보가 들어있는 요소를 찾습니다.
-                const dayBoxes = doc.querySelectorAll(".food_menu_box, .tb_data tbody tr");
-
-                // 파싱 기본 설정 및 렌더링 (홈페이지의 구조 변경을 고려한 예외 처리)
-                let todayData = { b: "식단 정보 없음", l: "식단 정보 없음", d: "식단 정보 없음" };
-                let tomorrowData = { b: "식단 정보 없음", l: "식단 정보 없음", d: "식단 정보 없음" };
-
-                // 파싱 로직: 웹페이지 구조 내 텍스트 검색
-                dayBoxes.forEach(box => {
-                    const text = box.innerText;
-                    if (text.includes(todayStr)) {
-                        todayData = parseMealText(text);
-                    }
-                    if (text.includes(tomorrowStr)) {
-                        tomorrowData = parseMealText(text);
-                    }
-                });
-
-                updateMealUI("today", todayData);
-                updateMealUI("tomorrow", tomorrowData);
-
-            } catch (error) {
-                console.error("급식 정보 불러오기 오류:", error);
-                showMealError();
-            }
-        }
-
-        function parseMealText(text) {
-            // 조식/중식/석식 구분을 위한 기본 자르기 로직
-            let b = "등록된 식단 없음", l = "등록된 식단 없음", d = "등록된 식단 없음";
-            
-            const lines = text.split("\n").map(s => s.trim()).filter(Boolean);
-            let currentType = "";
-
-            lines.forEach(line => {
-                if (line.includes("조식")) currentType = "b";
-                else if (line.includes("중식")) currentType = "l";
-                else if (line.includes("석식")) currentType = "d";
-                else if (currentType && line.length > 2) {
-                    if (currentType === "b") b = line;
-                    if (currentType === "l") l = line;
-                    if (currentType === "d") d = line;
-                }
-            });
-
-            return { b, l, d };
-        }
-
-        function updateMealUI(prefix, data) {
-            document.getElementById(`${prefix}Breakfast`).innerText = data.b;
-            document.getElementById(`${prefix}Lunch`).innerText = data.l;
-            document.getElementById(`${prefix}Dinner`).innerText = data.d;
-        }
-
-        function showMealError() {
-            const msg = "학교 홈페이지 연동 중입니다. (주말/휴일이거나 메뉴가 업데이트되지 않았을 수 있습니다.)";
-            document.getElementById("todayBreakfast").innerText = msg;
-            document.getElementById("todayLunch").innerText = msg;
-            document.getElementById("todayDinner").innerText = msg;
-            document.getElementById("tomorrowBreakfast").innerText = msg;
-            document.getElementById("tomorrowLunch").innerText = msg;
-            document.getElementById("tomorrowDinner").innerText = msg;
-        }
-
-        // 4. 수행평가 일정 연동
+        // 3. 수행평가 일정 토글 및 저장
         let isEditing = false;
         function toggleEditMode() {
             isEditing = !isEditing;
@@ -532,7 +390,7 @@
             if (savedData) document.getElementById("scheduleBody").innerHTML = savedData;
         }
 
-        // 5. 서식 다운로드 관리
+        // 4. 서식 다운로드 관리
         let forms = JSON.parse(localStorage.getItem("hwasung_3_8_forms")) || [
             { title: "📄 교외체험학습 신청서 및 보고서", url: "#" },
             { title: "📄 결석계 및 진료확인서 제출 양식", url: "#" }
@@ -574,7 +432,6 @@
         window.onload = function() {
             calculateDDay();
             loadNotice();
-            fetchSchoolMeals();
             loadSchedule();
             renderForms();
         };
